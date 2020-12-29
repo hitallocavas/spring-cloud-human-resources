@@ -1,0 +1,11 @@
+package br.ufpe.cin.hcs3.hrworker;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class HrWorkerApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(HrWorkerApplication.class, args);
+    }
+}
