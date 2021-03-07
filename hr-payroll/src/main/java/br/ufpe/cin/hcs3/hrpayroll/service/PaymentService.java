@@ -1,26 +1,38 @@
 package br.ufpe.cin.hcs3.hrpayroll.service;
 
-import br.ufpe.cin.hcs3.hrpayroll.client.WorkerFeignClient;
+import br.ufpe.cin.hcs3.hrpayroll.batch.Context;
+import br.ufpe.cin.hcs3.hrpayroll.batch.Job;
+import br.ufpe.cin.hcs3.hrpayroll.batch.enums.JobStatus;
 import br.ufpe.cin.hcs3.hrpayroll.domain.pojo.Payment;
-import br.ufpe.cin.hcs3.hrpayroll.domain.pojo.Worker;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
-
-    private final WorkerFeignClient workerFeignClient;
+    private final FindWorkerById findWorkerById;
+    private final BuildPayment buildPayment;
 
     public Payment getPayment(Long workerId, Integer days) {
+        Context context = new Context();
+        Job job = new Job(context);
+        context.add("WorkerID", workerId);
+        context.add("Days", days);
 
-        Worker worker = workerFeignClient.findById(workerId).getBody();
+        JobStatus jobStatus = job
+                .addTask(findWorkerById)
+                .addTask(buildPayment)
+                .execute();
 
-        return Payment.builder()
-                .dailyIncome(worker.getDailyIncome())
-                .name(worker.getName())
-                .days(days)
-                .build();
+        if (jobStatus.equals(JobStatus.INTERRUPTED)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Houve um erro nos dados enviados");
+        }
+
+        return (Payment) context.get("Payment");
     }
 
 }
