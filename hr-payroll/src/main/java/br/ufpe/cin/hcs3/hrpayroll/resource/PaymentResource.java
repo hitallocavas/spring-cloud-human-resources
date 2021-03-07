@@ -24,7 +24,7 @@ public class PaymentResource {
         return ResponseEntity.ok(paymentService.getPayment(workerId, days));
     }
 
-    public ResponseEntity<?> getPaymentFallback(Long workerId, Integer days){
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Não foi possível processar pagamento");
+    public ResponseEntity<Payment> getPaymentFallback(Long workerId, Integer days){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
